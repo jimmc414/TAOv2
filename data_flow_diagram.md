@@ -5,6 +5,53 @@
 This document presents the Data Flow Diagram (DFD) for the Task Automation Orchestrator (TAO) Agent v2.0. The diagram illustrates how data moves through the system, highlighting the interactions between different components, configuration files, and external entities.
 
 ## Diagram
+```
+    +--------+                  +--------------+
+    |  User  |<---------------->|  UI Manager  |
+    +--------+                  +------+-------+
+                                       ^
+                                       |
+  +-----------------+           +------+-------+
+  |Configuration    |---------->|  Workflow    |
+  |Files            |           |  Engine      |
+  +-----------------+           +------+-------+
+                                       |
+  +-----------------+           +------v-------+
+  |Plugin           |---------->|  Plugin      |
+  |Files            |           |  System      |
+  +-----------------+           +------+-------+
+                                       |
+                                +------v-------+
+                                |  Task        |
+                                |  Executor    |
+                                +---+--+--+--+-+
+                                    |  |  |  |
+            +------------------------+  |  |  |
+            |   +-----------------------+  |  |
+            |   |   +----------------------+  |
+            |   |   |   +---------------------+
+            |   |   |   |
+      +-----v---v-+ | +-v----------+ +-----------------+
+      |State      | | |Conditional | |Shared           |
+      |Machine    | | |Logic       | |Utilities        |
+      +-----+-----+ | +-----------++ +-----------------+
+            |       |             |
+    +-------v-----+ |        +----v-----+   +---------+
+    |State Store  | |        |Error     |-->| Logger  |
+    +-------------+ |        |Handler   |   +----+----+
+                    |        +-----------+        |
+                    |                             |
+                    |        +-----------+   +----v----+
+                    +------->|Progress   |   |Log      |
+                             |Reporter   |   |Store    |
+                             +-----+-----+   +---------+
+                                   |
+                                   |
+                             +-----v-----+
+                             |UI Manager |
+                             +-----------+
+```
+
 
 ```mermaid
 graph TD
