@@ -5,6 +5,58 @@
 This document presents the Call Graph for the Task Automation Orchestrator (TAO) Agent v2.0. The graph illustrates the relationships and function calls between different modules and components in the redesigned system.
 
 ## Call Graph
+```
+                    +----------+
+                    |  main.py |
+                    +----+-----+
+                         |
+                         v
+                +--------+--------+
+                |   UI_Manager    |
+                +--------+--------+
+                         |
+                         v
+            +------------+--------------+
+            |     WorkflowEngine        |
+            +------------+--------------+
+                |        |        |
+        +-------+  +-----+----+   +------+
+        |          |          |          |
+        v          v          v          v
+  +----------+ +---+-----+ +--+-----+ +--+-----+
+  | Config   | | Plugin  | | Task   | | Error  |
+  | Manager  | | System  | | Execu- | | Hand-  |
+  |          | |         | | tor    | | ler    |
+  +----------+ +---------+ +--+-----+ +---+----+
+                             |          |
+         +---------+---------+----------+
+         |         |         |          |
+         v         v         v          v
+    +----+---+ +---+---+ +---+----+ +---+--+
+    | State  | | Cond. | | Shared | | Prog |
+    | Mach-  | | Logic | | Utili- | | ress |
+    | ine    | |       | | ties   | | Rep. |
+    +--------+ +-------+ +--------+ +------+
+                             ^
+                             |
+    +------------------------|-------------------+
+    |        Plugin: StatuteOfLimitations        |
+    | +----------+  +----------+  +----------+   |
+    | | determine|  | clean    |  | retrieve |   |
+    | | _scope   |  | _works.  |  | _files   |   |
+    | +----------+  +----------+  +----------+   |
+    |                                            |
+    | +----------+  +----------+  +----------+   |
+    | | consolid.|  | calculate|  | generate |   |
+    | | _files   |  | _SoL     |  | _files   |   |
+    | +----------+  +----------+  +----------+   |
+    |                                            |
+    | +----------+  +----------+  +----------+   |
+    | | process  |  | copy_to  |  | update   |   |
+    | | _files   |  | _lcs     |  | _history |   |
+    | +----------+  +----------+  +----------+   |
+    +--------------------------------------------+
+```
 
 ```mermaid
 graph TD
