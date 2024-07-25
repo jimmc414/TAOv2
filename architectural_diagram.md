@@ -140,3 +140,45 @@ graph TD
 7. Shared Utilities provide common functionality across tasks and plugins.
 8. Errors are managed by the Error Handler and recorded by the Logger.
 9. The Progress Reporter keeps the UI updated on the workflow status.
+
+## File Layout
+
+taov2/
+│
+├── config/
+│   ├── config.yaml
+│   └── state_sol_laws.json
+│
+├── data/
+│   ├── input/
+│   ├── output/
+│   ├── temp/
+│   └── archive/
+│
+├── logs/
+│   └── tao_agent.log
+│
+├── plugins/
+│   ├── __init__.py
+│   └── statute_of_limitations.py
+│
+│
+├── src/
+│   └── tao/
+│       ├── __init__.py
+│       ├── main.py
+│       ├── workflow_engine.py
+│       ├── configuration_manager.py
+│       ├── plugin_system.py
+│       ├── task_executor.py
+│       ├── ui_manager.py
+│       ├── state_machine.py
+│       ├── error_handler.py
+│       ├── progress_reporter.py
+│       ├── conditional_logic.py
+│       └── shared_utilities.py
+│
+├── .gitignore
+├── LICENSE
+├── README.md
+└── requirements.txt
