@@ -6,6 +6,7 @@ This document presents the architectural diagram for the Task Automation Orchest
 
 ## Diagrams
 
+```
 +----------------+     +------------------------------------------------------+
 |    External    |     |                     Core System                       |
 |  +----------+  |     |  +---------------+        +----------------+          |
@@ -53,6 +54,7 @@ This document presents the architectural diagram for the Task Automation Orchest
         |              |                                       |               |
         +--------------+---------------------------------------+               |
                        +------------------------------------------------------+
+```
 
 ```mermaid
 graph TD
