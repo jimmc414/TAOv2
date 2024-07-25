@@ -4,7 +4,64 @@
 
 This document presents the Sequence Diagram for the Task Automation Orchestrator (TAO) Agent v2.0. The diagram illustrates the interactions between different components of the system over time, showing the flow of control and data during a typical workflow execution.
 
-## Diagram
+## Diagrams
+```
+User        UI Manager    Workflow Engine  Config Manager  Plugin System   Task Executor   State Machine   Conditional Logic Shared Utilities Error Handler   Logger    Progress Reporter
+ |               |                |                |               |                |                |                   |                  |               |          |                  |
+ | Start workflow|                |                |               |                |                |                   |                  |               |          |                  |
+ |-------------->|                |                |               |                |                |                   |                  |               |          |                  |
+ |               | Initialize     |                |               |                |                |                   |                  |               |          |                  |
+ |               | workflow       |                |               |                |                |                   |                  |               |          |                  |
+ |               |--------------->|                |               |                |                |                   |                  |               |          |                  |
+ |               |                | Load config    |               |                |                |                   |                  |               |          |                  |
+ |               |                |--------------->|               |                |                |                   |                  |               |          |                  |
+ |               |                |<---------------|               |                |                |                   |                  |               |          |                  |
+ |               |                | Load plugins   |               |                |                |                   |                  |               |          |                  |
+ |               |                |------------------------------->|                |                |                   |                  |               |          |                  |
+ |               |                |<-------------------------------|                |                |                   |                  |               |          |                  |
+ |               |                |                |               |                |                |                   |                  |               |          |                  |
+ |               |                |----------------- For each task in workflow -----|                |                   |                  |               |          |                  |
+ |               |                | Execute task   |               |                |                |                   |                  |               |          |                  |
+ |               |                |------------------------------->|                |                |                   |                  |               |          |                  |
+ |               |                |                |               | Get current    |                |                   |                  |               |          |                  |
+ |               |                |                |               | state          |                |                   |                  |               |          |                  |
+ |               |                |                |               |--------------->|                |                   |                  |               |          |                  |
+ |               |                |                |               |<---------------|                |                   |                  |               |          |                  |
+ |               |                |                |               | Evaluate       |                |                   |                  |               |          |                  |
+ |               |                |                |               | conditions     |                |                   |                  |               |          |                  |
+ |               |                |                |               |-------------------------------->|                   |                  |               |          |                  |
+ |               |                |                |               |<--------------------------------|                   |                  |               |          |                  |
+ |               |                |                |               |                |                |                   |                  |               |          |                  |
+ |               |                |                |               |---- Conditional execution ------|                   |                  |               |          |                  |
+ |               |                |                |               | Perform utility|                |                   |                  |               |          |                  |
+ |               |                |                |               | operation      |                |                   |                  |               |          |                  |
+ |               |                |                |               |---------------------------------------------------->|                  |               |          |                  |
+ |               |                |                |               |<----------------------------------------------------|                  |               |          |                  |
+ |               |                |                |               |                |                |                   |                  |               |          |                  |
+ |               |                |                |               |---- Error occurs ----------------------------------------------------->|               |          |                  |
+ |               |                |                |               |                |                |                   |                  | Log error     |          |                  |
+ |               |                |                |               |                |                |                   |                  |-------------->|          |                  |
+ |               |                |                |               |                |                |                   |                  |<--------------|          |                  |
+ |               |                |                |               |                |                |                   |                  |               |          |                  |
+ |               |                |                |               | Update state   |                |                   |                  |               |          |                  |
+ |               |                |                |               |--------------->|                |                   |                  |               |          |                  |
+ |               |                |                |               | Report progress|                |                   |                  |               |          |                  |
+ |               |                |                |               |--------------------------------------------------------------------------------------->|          |                  |
+ |               |                |                |               |                |                |                   |                  |               |          | Update progress  |
+ |               |<------------------------------------------------------------------------------------------------------|                  |               |          |                  |
+ |               |                |                |               | Task result    |                |                   |                  |               |          |                  |
+ |               |                |<-------------------------------|                |                |                   |                  |               |          |                  |
+ |               |                |                |               |                |                |                   |                  |               |          |                  |
+ |               |                |--------------- End of loop ----|                |                |                   |                  |               |          |                  |
+ |               |                |                |               |                |                |                   |                  |               |          |                  |
+ |               | Workflow       |                |               |                |                |                   |                  |               |          |                  |
+ |               | complete       |                |               |                |                |                   |                  |               |          |                  |
+ |               |<---------------|                |               |                |                |                   |                  |               |          |                  |
+ | Display       |                |                |               |                |                |                   |                  |               |          |                  |
+ | results       |                |                |               |                |                |                   |                  |               |          |                  |
+ |<--------------|                |                |               |                |                |                   |                  |               |          |                  |
+ |               |                |                |               |                |                |                   |                  |               |          |                  |
+ ```
 
 ```mermaid
 sequenceDiagram
