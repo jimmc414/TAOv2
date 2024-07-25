@@ -209,5 +209,3 @@ When updating these documents, keep in mind the following key aspects of TAO Age
 - The enhanced role of YAML configuration in defining system behavior
 - The improved error handling and logging mechanisms
 - The use of shared utilities and task templates for consistency and efficiency
-
-By aligning these documents with the new architecture and features of TAO Agent v2.0, we will provide a comprehensive and coherent description of the system's design and operation.
