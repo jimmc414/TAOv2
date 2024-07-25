@@ -170,6 +170,7 @@ taov2/
 │       ├── workflow_engine.py
 │       ├── configuration_manager.py
 │       ├── plugin_system.py
+│       ├── base_plugin.py
 │       ├── task_executor.py
 │       ├── ui_manager.py
 │       ├── state_machine.py
