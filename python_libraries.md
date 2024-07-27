@@ -1,6 +1,6 @@
 # Python Libraries for TAO Agent v2.0
 
-This document lists and describes the Python libraries used in the Task Automation Orchestrator (TAO) Agent v2.0. It includes core libraries, data processing tools, utility packages, and several innovative additions to enhance efficiency, flexibility, and functionality.
+This document lists and describes the Python libraries used or slated to be used in the Task Automation Orchestrator (TAO) Agent v2.0. It includes core libraries, data processing tools, utility packages, and several innovative additions to enhance efficiency, flexibility, and functionality.
 
 ## Core Libraries
 
