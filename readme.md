@@ -41,8 +41,8 @@ The Task Automation Orchestrator (TAO) v2.0 is a powerful, flexible system desig
 
 1. Clone the repository:
    ```
-   git clone https://github.com/your-repo/tao-agent.git
-   cd tao-agent
+   git clone https://github.com/jimmc414/TAOv2.git
+   cd tao-agentTAOv2
    ```
 
 2. Install dependencies:
@@ -67,7 +67,7 @@ The Task Automation Orchestrator (TAO) v2.0 is a powerful, flexible system desig
 
 4. Run TAO:
    ```
-   python tao_agent.py --config my_config.yaml
+   python TAOv2.py --config my_config.yaml
    ```
 
 ## Configuration Structure
@@ -122,8 +122,8 @@ graph TD
 
 1. Clone the repository:
    ```
-   git clone https://github.com/your-repo/tao-agent.git
-   cd tao-agent
+   git clone https://github.com/jimmc414/TAOv2.git
+   cd TAOv2
    ```
 
 2. Install dependencies:
@@ -137,7 +137,7 @@ graph TD
 
 4. Run TAO:
    ```
-   python tao_agent.py --config your_config.yaml
+   python TAOv2.py --config your_config.yaml
    ```
 
 ## Creating and Using Plugins
