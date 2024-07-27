@@ -1,11 +1,12 @@
-config_version: "2.2"
+config_version: "2.3"
 name: "Basic Task Automation Orchestrator"
-description: "A simple configuration for basic task automation workflows"
+description: "A simple configuration for basic task automation workflows with enhanced variable and conditional capabilities"
 
 global:
   variables:
     MAX_RETRIES: 3
     TIMEOUT: 600  # 10 minutes
+    ERROR_THRESHOLD: 5
   imports:
     - import: os
     - import: sys
@@ -31,10 +32,12 @@ plugins:
 
 workflow:
   name: "Basic File Processing Workflow"
-  description: "A simple workflow for processing input files"
+  description: "A simple workflow for processing input files with enhanced control"
   variables:
     input_directory: "./data/input"
     output_directory: "./data/output"
+    file_count: 0
+    error_count: 0
   
   tasks:
     - name: check_input_files
@@ -44,9 +47,31 @@ workflow:
       parameters:
         directory: ${input_directory}
         pattern: "*.txt"
+      set_variables:
+        file_count: "{{ len(result) }}"
       on_success:
-        next: process_files
+        next: evaluate_file_count
       on_failure:
+        action: end_workflow
+
+    - name: evaluate_file_count
+      description: "Determine whether to process files or end workflow"
+      plugin: core_plugin
+      function: evaluate_condition
+      parameters:
+        condition: "{{ file_count > 0 }}"
+      on_success:
+        true_branch: process_files
+        false_branch: handle_no_files
+
+    - name: handle_no_files
+      description: "Handle the case when no input files are found"
+      plugin: core_plugin
+      function: log_message
+      parameters:
+        message: "No input files found. Workflow will terminate."
+        level: WARNING
+      on_completion:
         action: end_workflow
 
     - name: process_files
@@ -57,10 +82,32 @@ workflow:
         input_files: "{{ tasks.check_input_files.output.files }}"
         output_directory: ${output_directory}
       on_success:
-        next: cleanup_workspace
+        next: check_error_count
       on_failure:
         action: retry_task
         max_retries: ${MAX_RETRIES}
+      set_variables:
+        error_count: "{{ error_count + result.failed_files }}"
+
+    - name: check_error_count
+      description: "Check if error threshold has been exceeded"
+      plugin: core_plugin
+      function: evaluate_condition
+      parameters:
+        condition: "{{ error_count > ERROR_THRESHOLD }}"
+      on_success:
+        true_branch: handle_excessive_errors
+        false_branch: cleanup_workspace
+
+    - name: handle_excessive_errors
+      description: "Handle case where too many errors occurred"
+      plugin: core_plugin
+      function: log_message
+      parameters:
+        message: "Error threshold exceeded. Manual intervention required."
+        level: ERROR
+      on_completion:
+        action: notify_admin
 
     - name: cleanup_workspace
       description: "Clean up temporary files"
@@ -80,7 +127,7 @@ on_workflow_complete:
   - function: log_message
     plugin: core_plugin
     parameters:
-      message: "Workflow completed successfully"
+      message: "Workflow completed successfully. Processed {{ file_count }} files with {{ error_count }} errors."
       level: INFO
 
 on_workflow_failure:
