@@ -1,23 +1,70 @@
 # Task Automation Orchestrator (TAO) v2.0
 
-[Previous sections remain the same]
+# Task Automation Orchestrator (TAO) v2.0
+
+## Table of Contents
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Quick Start Guide](#quick-start-guide)
+- [Configuration Structure](#configuration-structure)
+- [System Architecture](#system-architecture)
+- [Installation and Setup](#installation-and-setup)
+- [Creating and Using Plugins](#creating-and-using-plugins)
+- [Creating Workflows](#creating-workflows)
+- [Advanced Configuration Examples](#advanced-configuration-examples)
+- [Performance Considerations](#performance-considerations)
+- [Testing and Debugging](#testing-and-debugging)
+- [Error Handling and Logging](#error-handling-and-logging)
+- [Security Best Practices](#security-best-practices)
+- [Contributing](#contributing)
+- [License](#license)
+- [Troubleshooting](#troubleshooting)
+- [FAQ](#faq)
+- [Changelog](#changelog)
+- [Roadmap](#roadmap)
+
+## Overview
+
+The Task Automation Orchestrator (TAO) v2.0 is a powerful, flexible system designed to automate complex, multi-step workflows. This refactored version builds upon the original AI-driven design, transitioning to a more traditional, logic-based approach using Python. TAO v2.0 offers enhanced configurability, improved error handling, and a plugin-based architecture for maximum flexibility.
+
+## Key Changes in v2.0
+
+- **Operate as a standalone logic engine before implementing LLM**: A functional, configurable, rule-based logic engine must be able to stand alone before implementing AI-driven decision Orchestrator.
+- **Plugin-based Architecture**: Introduced a modular, plugin-based system for enhanced flexibility and extensibility.
+- **Enhanced Configuration**: Expanded YAML-based configuration for fine-grained control over workflows and tasks.
+- **Improved Error Handling**: Implemented more robust, configurable error management at multiple levels.
 
 ## Key Features
 
-[Previous features remain, with these additions:]
+- **Dual Configuration Modes**: Choose between complex and basic configuration setups to suit your workflow needs.
+- **Plugin-based Architecture**: Easily extend functionality with custom plugins.
+- **Advanced Conditional Logic**: Create sophisticated workflows with complex branching and decision-making.
+- **Dynamic Data Flow**: Flexibly pass data between tasks and steps within your workflow.
+- **Comprehensive Error Handling**: Robust error management at multiple levels (workflow, task, and step).
+- **Detailed Logging**: Configure logging at global and task-specific levels.
+- **Templating System**: Reuse common configurations across different workflows.
+- **Resource Management**: Easily manage external resources like databases and API endpoints.
+- **Security Features**: Built-in security configurations for sensitive operations.
 - **Dynamic Variable Management**: Define, set, and use variables across your workflow for flexible task execution.
 - **Enhanced Conditional Logic**: Create complex, data-driven decision trees using runtime variables and task outputs.
 
 ## Configuration Structure
 
-TAO v2.0 supports two levels of configuration complexity, both now with enhanced variable and conditional logic support:
+TAO v2.0 supports two levels of configuration complexity:
 
 1. **Complex Configuration** (`complex_config.yaml`):
-   [Previous points remain, with this addition:]
+   - Modular structure with references to other configuration files
+   - Schema definitions for validation
+   - Detailed task and step configurations
+   - Advanced conditional logic and data flow management
+   - Task-specific logging configurations
    - Dynamic variable definition and usage throughout the workflow
 
 2. **Basic Configuration** (`basic_config.yaml`):
-   [Previous points remain, with this addition:]
+   - Essential configuration elements
+   - Simplified workflow structure
+   - Minimal plugin usage
+   - Basic error handling and logging
    - Simple variable usage and basic conditional logic
 
 ## Variable Management
