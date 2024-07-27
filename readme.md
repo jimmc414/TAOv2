@@ -1,7 +1,5 @@
 # Task Automation Orchestrator (TAO) v2.0
 
-# Task Automation Orchestrator (TAO) v2.0
-
 ## Table of Contents
 - [Overview](#overview)
 - [Key Features](#key-features)
