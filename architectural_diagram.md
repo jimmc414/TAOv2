@@ -164,7 +164,7 @@ graph TD
 
 
 ## File Layout
-
+```
 taov2/
 │
 ├── config/
@@ -205,3 +205,4 @@ taov2/
 ├── LICENSE
 ├── README.md
 └── requirements.txt
+```
