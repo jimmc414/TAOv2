@@ -1,8 +1,8 @@
-# TAO Agent v2.0 Call Graph
+# TAO Agent v2.0 Call Graph with Generic Plugin Structure
 
 ## Overview
 
-This document presents the Call Graph for the Task Automation Orchestrator (TAO) Agent v2.0. The graph illustrates the relationships and function calls between different modules and components in the redesigned system.
+This document presents the Call Graph for the Task Automation Orchestrator (TAO) Agent v2.0, incorporating enhanced variable management, conditional logic capabilities, and a generic plugin structure. The graph illustrates the relationships and function calls between different modules and components in the redesigned system, emphasizing flexibility and adaptability for various automation tasks.
 
 ## Call Graph
 ```
@@ -19,43 +19,51 @@ This document presents the Call Graph for the Task Automation Orchestrator (TAO)
             +------------+--------------+
             |     WorkflowEngine        |
             +------------+--------------+
-                |        |        |
-        +-------+  +-----+----+   +------+
-        |          |          |          |
-        v          v          v          v
-  +----------+ +---+-----+ +--+-----+ +--+-----+
-  | Config   | | Plugin  | | Task   | | Error  |
-  | Manager  | | System  | | Execu- | | Hand-  |
-  |          | |         | | tor    | | ler    |
-  +----------+ +---------+ +--+-----+ +---+----+
-                             |          |
-         +---------+---------+----------+
-         |         |         |          |
-         v         v         v          v
-    +----+---+ +---+---+ +---+----+ +---+--+
-    | State  | | Cond. | | Shared | | Prog |
-    | Mach-  | | Logic | | Utili- | | ress |
-    | ine    | |       | | ties   | | Rep. |
-    +--------+ +-------+ +--------+ +------+
-                             ^
-                             |
-    +------------------------|-------------------+
-    |        Plugin: StatuteOfLimitations        |
-    | +----------+  +----------+  +----------+   |
-    | | determine|  | clean    |  | retrieve |   |
-    | | _scope   |  | _works.  |  | _files   |   |
-    | +----------+  +----------+  +----------+   |
-    |                                            |
-    | +----------+  +----------+  +----------+   |
-    | | consolid.|  | calculate|  | generate |   |
-    | | _files   |  | _SoL     |  | _files   |   |
-    | +----------+  +----------+  +----------+   |
-    |                                            |
-    | +----------+  +----------+  +----------+   |
-    | | process  |  | copy_to  |  | update   |   |
-    | | _files   |  | _lcs     |  | _history |   |
-    | +----------+  +----------+  +----------+   |
-    +--------------------------------------------+
+                |    |    |    |    |
+        +-------+    |    |    |    +------+
+        |            |    |    |           |
+        v            v    v    v           v
+  +----------+  +----+--+ +--+---+  +------+-----+
+  | Config   |  |Variable| |Plugin|  | Error     |
+  | Manager  |  |Manager| |System|  | Handler   |
+  +-----+----+  +----+--+ +--+---+  +------+-----+
+        |            |       |             |
+        |      +-----+       |             |
+        |      |             |             |
+        v      v             v             v
+  +-----+------+--+  +-------+-----+  +----+----+
+  | TaskExecutor   |  | Conditional |  | Logger |
+  +-----+------+--+  | Logic       |  +---------+
+        |      |     +-------+-----+
+        |      |             ^
+        |      |             |
+        |      |     +-------+-----+
+        |      +---->| State       |
+        |            | Machine     |
+        |            +-------------+
+        |
+        |     +----------------+
+        +---->| Shared         |
+        |     | Utilities      |
+        |     +----------------+
+        |
+        |     +----------------+
+        +---->| Progress       |
+              | Reporter       |
+              +----------------+
+
+    +----------------------------------------+
+    |        Generic Plugin Structure        |
+    | +----------+  +----------+  +--------+ |
+    | |initialize|  |execute_  |  |cleanup | |
+    | |          |  |task      |  |        | |
+    | +----------+  +----------+  +--------+ |
+    |                                        |
+    | +----------+  +----------+  +--------+ |
+    | |validate_ |  |get_      |  |custom_ | |
+    | |config    |  |tasks     |  |method  | |
+    | +----------+  +----------+  +--------+ |
+    +----------------------------------------+
 ```
 
 ```mermaid
@@ -64,9 +72,12 @@ graph TD
     UI --> WE[WorkflowEngine.execute_workflow]
     
     WE --> CM[ConfigurationManager.load_config]
+    WE --> VM[VariableManager.initialize]
     WE --> PS[PluginSystem.load_plugins]
     WE --> TE[TaskExecutor.execute_task]
     
+    TE --> VM[VariableManager.get_variable]
+    TE --> VM[VariableManager.set_variable]
     TE --> SM[StateMachine.get_state]
     TE --> SM[StateMachine.update_state]
     TE --> CL[ConditionalLogic.evaluate]
@@ -74,39 +85,34 @@ graph TD
     TE --> EH[ErrorHandler.handle_error]
     TE --> PR[ProgressReporter.update_progress]
     
+    CL --> VM[VariableManager.get_variable]
+    SU --> VM[VariableManager.get_variable]
+    SU --> VM[VariableManager.set_variable]
+    
     EH --> L[Logger.log_error]
     
-    subgraph "Plugin: StatuteOfLimitations"
-        TE --> SOL_DS[determine_processing_scope]
-        TE --> SOL_CW[clean_workspace]
-        TE --> SOL_RF[retrieve_new_input_files]
-        TE --> SOL_CF[consolidate_input_files]
-        TE --> SOL_CS[calculate_statute_of_limitations]
-        TE --> SOL_GI[generate_input_files]
-        TE --> SOL_PI[process_input_files]
-        TE --> SOL_CL[copy_to_lcs_data]
-        TE --> SOL_UH[update_processing_history]
+    subgraph "Generic Plugin"
+        TE --> GP_IN[initialize]
+        TE --> GP_ET[execute_task]
+        TE --> GP_CL[cleanup]
+        TE --> GP_VC[validate_config]
+        TE --> GP_GT[get_tasks]
+        TE --> GP_CM[custom_method]
     end
     
     CM --> YAMLParser[yaml.safe_load]
     PS --> importlib[importlib.import_module]
     
-    SOL_DS --> SU
-    SOL_CW --> SU
-    SOL_RF --> SU
-    SOL_CF --> SU
-    SOL_CS --> SU
-    SOL_GI --> SU
-    SOL_PI --> SU
-    SOL_CL --> SU
-    SOL_UH --> SU
+    GP_ET --> VM[VariableManager.get_variable]
+    GP_ET --> VM[VariableManager.set_variable]
+    GP_ET --> SU[SharedUtilities.perform_operation]
     
     classDef core fill:#f9f,stroke:#333,stroke-width:2px;
     classDef plugin fill:#bbf,stroke:#333,stroke-width:2px;
     classDef external fill:#bfb,stroke:#333,stroke-width:2px;
     
-    class Main,UI,WE,CM,PS,TE,SM,CL,SU,EH,PR,L core;
-    class SOL_DS,SOL_CW,SOL_RF,SOL_CF,SOL_CS,SOL_GI,SOL_PI,SOL_CL,SOL_UH plugin;
+    class Main,UI,WE,CM,VM,PS,TE,SM,CL,SU,EH,PR,L core;
+    class GP_IN,GP_ET,GP_CL,GP_VC,GP_GT,GP_CM plugin;
     class YAMLParser,importlib external;
 ```
 
@@ -114,43 +120,46 @@ graph TD
 
 1. **main.py**: Entry point of the application.
 2. **UI_Manager**: Handles user interactions and displays results.
-3. **WorkflowEngine**: Orchestrates the overall workflow execution.
-4. **ConfigurationManager**: Loads and parses configuration files.
-5. **PluginSystem**: Manages loading and integration of plugins.
-6. **TaskExecutor**: Executes individual tasks in the workflow.
-7. **StateMachine**: Manages and updates the state of the workflow.
-8. **ConditionalLogic**: Evaluates conditions for task execution.
-9. **SharedUtilities**: Provides common utility functions.
-10. **ErrorHandler**: Manages error detection and handling.
-11. **Logger**: Records system events and errors.
-12. **ProgressReporter**: Updates and reports task progress.
+3. **WorkflowEngine**: Orchestrates the overall workflow execution, including variable initialization and plugin management.
+4. **ConfigurationManager**: Loads and parses configuration files, including variable definitions and conditional logic rules.
+5. **VariableManager**: Manages variable lifecycle, including initialization, access, and updates.
+6. **PluginSystem**: Manages loading and integration of generic plugins.
+7. **TaskExecutor**: Executes individual tasks in the workflow, interacting with plugins and managing variables.
+8. **StateMachine**: Manages and updates the state of the workflow, potentially including variable states.
+9. **ConditionalLogic**: Evaluates conditions for task execution, with access to variables for complex conditions.
+10. **SharedUtilities**: Provides common utility functions, with ability to access and modify variables.
+11. **ErrorHandler**: Manages error detection and handling, with potential access to variable context.
+12. **Logger**: Records system events, errors, and potentially variable states.
+13. **ProgressReporter**: Updates and reports task progress, potentially including variable state information.
 
-## Plugin: StatuteOfLimitations
+## Generic Plugin Structure
 
-This plugin implements specific tasks for the Statute of Limitations workflow:
+The generic plugin structure includes the following methods:
 
-1. **determine_processing_scope**: Determines the date range for processing.
-2. **clean_workspace**: Prepares the workspace for new data processing.
-3. **retrieve_new_input_files**: Retrieves new input files for processing.
-4. **consolidate_input_files**: Combines all input files into a single file.
-5. **calculate_statute_of_limitations**: Calculates SoL dates for each record.
-6. **generate_input_files**: Generates system-specific input files.
-7. **process_input_files**: Processes the generated input files.
-8. **copy_to_lcs_data**: Copies processed files to the LCS data directory.
-9. **update_processing_history**: Updates the processing history database.
+1. **initialize**: Sets up the plugin when it's first loaded.
+2. **execute_task**: Performs the main functionality of the plugin for a given task.
+3. **cleanup**: Performs any necessary cleanup operations when the plugin is unloaded.
+4. **validate_config**: Validates the plugin's configuration.
+5. **get_tasks**: Returns a list of tasks that the plugin can perform.
+6. **custom_method**: Represents any additional custom methods that a plugin might implement.
 
 ## Key Relationships
 
-1. The `WorkflowEngine` is the central coordinator, calling methods from `ConfigurationManager`, `PluginSystem`, and `TaskExecutor`.
-2. `TaskExecutor` interacts with various core components (`StateMachine`, `ConditionalLogic`, `SharedUtilities`, `ErrorHandler`, `ProgressReporter`) to execute tasks.
-3. Plugin tasks (e.g., from StatuteOfLimitations) are called by the `TaskExecutor` and can use `SharedUtilities` for common operations.
-4. Error handling is centralized through the `ErrorHandler`, which uses the `Logger` to record errors.
+1. The `WorkflowEngine` remains the central coordinator, managing the `VariableManager` and `PluginSystem`.
+2. `ConfigurationManager` loads variable definitions, conditional logic rules, and plugin configurations.
+3. `PluginSystem` loads and manages generic plugins based on the configuration.
+4. `TaskExecutor` interacts with loaded plugins to execute tasks, managing variables through `VariableManager`.
+5. Generic plugins can access and modify variables through `VariableManager`, and use `SharedUtilities` for common operations.
+6. `ConditionalLogic` accesses variables through `VariableManager` for evaluating complex conditions defined in the configuration.
+7. Error handling through `ErrorHandler` may include variable and plugin context in logged errors.
 
 ## Notes
 
 - Core system components are shown in pink.
-- Plugin-specific functions are shown in light blue.
+- Generic plugin methods are shown in light blue.
 - External library calls (e.g., YAML parsing, module importing) are shown in light green.
-- This call graph represents the high-level structure and main function calls. Detailed error handling paths and some utility function calls may be omitted for clarity.
+- The `VariableManager` component is central to enabling dynamic behavior across the system and plugins.
+- This generic structure allows for easy addition of new plugins without modifying the core system.
+- Conditional logic and variable management are now applicable across all plugins, enhancing system flexibility.
 
-This Call Graph provides a comprehensive overview of the function calls and relationships between different modules in TAO Agent v2.0, reflecting the plugin-based architecture and the separation of core system logic from specific task implementations.
+This revised call graph represents a more flexible and adaptable TAO Agent v2.0 system, capable of handling a wide range of automation tasks through its generic plugin structure and enhanced variable and conditional logic capabilities.
