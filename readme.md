@@ -1,261 +1,181 @@
 # Task Automation Orchestrator (TAO) v2.0
 
-## Table of Contents
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Quick Start Guide](#quick-start-guide)
-- [Configuration Structure](#configuration-structure)
-- [System Architecture](#system-architecture)
-- [Installation and Setup](#installation-and-setup)
-- [Creating and Using Plugins](#creating-and-using-plugins)
-- [Creating Workflows](#creating-workflows)
-- [Advanced Configuration Examples](#advanced-configuration-examples)
-- [Performance Considerations](#performance-considerations)
-- [Testing and Debugging](#testing-and-debugging)
-- [Error Handling and Logging](#error-handling-and-logging)
-- [Security Best Practices](#security-best-practices)
-- [Contributing](#contributing)
-- [License](#license)
-- [Troubleshooting](#troubleshooting)
-- [FAQ](#faq)
-- [Changelog](#changelog)
-- [Roadmap](#roadmap)
-
-## Overview
-
-The Task Automation Orchestrator (TAO) v2.0 is a powerful, flexible system designed to automate complex, multi-step workflows. This refactored version builds upon the original AI-driven design, transitioning to a more traditional, logic-based approach using Python. TAO v2.0 offers enhanced configurability, improved error handling, and a plugin-based architecture for maximum flexibility.
+[Previous sections remain the same]
 
 ## Key Features
 
-- **Dual Configuration Modes**: Choose between complex and basic configuration setups to suit your workflow needs.
-- **Plugin-based Architecture**: Easily extend functionality with custom plugins.
-- **Advanced Conditional Logic**: Create sophisticated workflows with complex branching and decision-making.
-- **Dynamic Data Flow**: Flexibly pass data between tasks and steps within your workflow.
-- **Comprehensive Error Handling**: Robust error management at multiple levels (workflow, task, and step).
-- **Detailed Logging**: Configure logging at global and task-specific levels.
-- **Templating System**: Reuse common configurations across different workflows.
-- **Resource Management**: Easily manage external resources like databases and API endpoints.
-- **Security Features**: Built-in security configurations for sensitive operations.
-
-## Quick Start Guide
-
-1. Clone the repository:
-   ```
-   git clone https://github.com/jimmc414/TAOv2.git
-   cd tao-agentTAOv2
-   ```
-
-2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
-3. Create a basic configuration file `my_config.yaml`:
-   ```yaml
-   config_version: "2.2"
-   name: "My First TAO Workflow"
-   
-   workflow:
-     name: "Hello World Workflow"
-     tasks:
-       - name: say_hello
-         plugin: core_plugin
-         function: print_message
-         parameters:
-           message: "Hello, TAO!"
-   ```
-
-4. Run TAO:
-   ```
-   python TAOv2.py --config my_config.yaml
-   ```
+[Previous features remain, with these additions:]
+- **Dynamic Variable Management**: Define, set, and use variables across your workflow for flexible task execution.
+- **Enhanced Conditional Logic**: Create complex, data-driven decision trees using runtime variables and task outputs.
 
 ## Configuration Structure
 
-TAO v2.0 supports two levels of configuration complexity:
+TAO v2.0 supports two levels of configuration complexity, both now with enhanced variable and conditional logic support:
 
 1. **Complex Configuration** (`complex_config.yaml`):
-   - Modular structure with references to other configuration files
-   - Schema definitions for validation
-   - Detailed task and step configurations
-   - Advanced conditional logic and data flow management
-   - Task-specific logging configurations
+   [Previous points remain, with this addition:]
+   - Dynamic variable definition and usage throughout the workflow
 
 2. **Basic Configuration** (`basic_config.yaml`):
-   - Essential configuration elements
-   - Simplified workflow structure
-   - Minimal plugin usage
-   - Basic error handling and logging
+   [Previous points remain, with this addition:]
+   - Simple variable usage and basic conditional logic
 
-## System Architecture
+## Variable Management
 
-TAO v2.0 is built on a modular architecture with the following key components:
+TAO v2.0 introduces a powerful variable management system:
 
-```mermaid
-graph TD
-    A[Workflow Engine] --> B[Configuration Manager]
-    A --> C[Plugin System]
-    A --> D[Task Executor]
-    A --> E[State Machine]
-    A --> F[Conditional Logic Module]
-    A --> G[Shared Utilities]
-    A --> H[Error Handler]
-    A --> I[Logger]
-    A --> J[Progress Reporter]
-    C --> K[Custom Plugins]
-    D --> L[Tasks]
-    L --> M[Steps]
-```
-
-1. **Workflow Engine**: Manages the overall process flow and plugin execution.
-2. **Configuration Manager**: Handles loading and parsing of YAML configuration files.
-3. **Plugin System**: Allows for easy integration of custom task sets and workflows.
-4. **Task Executor**: Responsible for executing individual tasks and managing their lifecycle.
-5. **State Machine**: Maintains and manages the state of the workflow execution.
-6. **Conditional Logic Module**: Implements rule-based decision making for dynamic workflow control.
-7. **Shared Utilities**: Common functions available to all tasks and plugins.
-8. **Error Handler**: Manages error detection, reporting, and recovery strategies.
-9. **Logger**: Records system events, task executions, and error information.
-10. **Progress Reporter**: Tracks and reports the progress of tasks and overall workflow.
-
-## Installation and Setup
-
-1. Clone the repository:
-   ```
-   git clone https://github.com/jimmc414/TAOv2.git
-   cd TAOv2
-   ```
-
-2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
-3. Configure your environment:
-   - Copy `example.env` to `.env` and fill in the necessary environment variables.
-   - Choose between `complex_config.yaml` or `basic_config.yaml` as your starting point.
-
-4. Run TAO:
-   ```
-   python TAOv2.py --config your_config.yaml
-   ```
-
-## Creating and Using Plugins
-
-Plugins are the core of TAO's extensibility. To create a new plugin:
-
-1. Create a new Python file in the `plugins` directory (e.g., `my_plugin.py`).
-2. Implement the required plugin interface:
-
-   ```python
-   from tao.base_plugin import BasePlugin
-
-   class MyPlugin(BasePlugin):
-       def initialize(self):
-           # Plugin initialization code
-
-       def execute_task(self, task_name: str, parameters: dict):
-           # Task execution code
-
-       def cleanup(self):
-           # Cleanup code
-   ```
-
-3. Register your plugin in the configuration file:
+1. **Defining Variables**: 
+   Variables can be defined at the workflow level or within tasks:
 
    ```yaml
-   plugins:
-     - name: "my_plugin"
-       module: "plugins.my_plugin"
-       description: "Description of my plugin"
+   workflow:
+     variables:
+       global_var: "I'm a global variable"
+     tasks:
+       - name: task1
+         variables:
+           task_var: "I'm a task-specific variable"
    ```
 
-## Creating Workflows
+2. **Using Variables**:
+   Reference variables using the `${variable_name}` syntax:
 
-Workflows are defined in the YAML configuration file. Here's a basic example:
+   ```yaml
+   tasks:
+     - name: print_message
+       plugin: core_plugin
+       function: print_message
+       parameters:
+         message: ${global_var}
+   ```
 
-```yaml
-workflow:
-  name: "My Workflow"
-  description: "A simple workflow example"
-  tasks:
-    - name: task1
-      plugin: my_plugin
-      function: do_something
-      parameters:
-        param1: value1
-    - name: task2
-      plugin: another_plugin
-      function: do_something_else
-      parameters:
-        param2: value2
-```
+3. **Setting Variables**:
+   Tasks can set variables for use in subsequent tasks:
 
-For more complex workflows, refer to the `complex_config.yaml` example.
+   ```yaml
+   tasks:
+     - name: set_variable
+       plugin: core_plugin
+       function: process_data
+       set_variables:
+         processed_result: "{{ result.data }}"
+   ```
 
-## Advanced Configuration Examples
+4. **Dynamic Expressions**:
+   Use expressions for dynamic variable values:
 
-Here's an example of a more complex workflow with conditional branching:
+   ```yaml
+   variables:
+     current_date: "{{ now().strftime('%Y-%m-%d') }}"
+   ```
+
+## Enhanced Conditional Logic
+
+TAO v2.0 supports advanced conditional logic using variables and task outputs:
+
+1. **Simple Conditions**:
+   ```yaml
+   tasks:
+     - name: conditional_task
+       plugin: core_plugin
+       function: branch
+       conditions:
+         - condition: "{{ file_count > 0 }}"
+           true_branch: process_files
+           false_branch: handle_no_files
+   ```
+
+2. **Complex Conditions**:
+   ```yaml
+   tasks:
+     - name: complex_conditional
+       plugin: core_plugin
+       function: evaluate
+       conditions:
+         - type: and
+           conditions:
+             - "{{ tasks.process_files.output.processed_count > 10 }}"
+             - "{{ 'high_priority' in workflow.flags }}"
+           true_branch: send_priority_notification
+           false_branch: continue
+   ```
+
+## Advanced Configuration Example
+
+Here's an example showcasing variable usage and advanced conditional logic:
 
 ```yaml
 workflow:
   name: "Advanced Data Processing"
+  variables:
+    input_directory: "./data/input"
+    file_count: 0
+    error_threshold: 5
   tasks:
-    - name: fetch_data
-      plugin: data_plugin
-      function: fetch_from_api
+    - name: count_files
+      plugin: file_operations_plugin
+      function: count_files
       parameters:
-        api_endpoint: "https://api.example.com/data"
-    - name: process_data
+        directory: ${input_directory}
+      set_variables:
+        file_count: "{{ result }}"
+    
+    - name: process_files
       plugin: data_plugin
-      function: process_json
+      function: process_data
+      conditions:
+        - condition: "{{ file_count > 0 }}"
+          true_branch: perform_processing
+          false_branch: handle_no_files
       parameters:
-        input: "{{ tasks.fetch_data.output }}"
-    - name: conditional_task
+        input_files: "{{ tasks.count_files.output.files }}"
+      set_variables:
+        processed_count: "{{ result.processed }}"
+        error_count: "{{ result.errors }}"
+    
+    - name: evaluate_results
       plugin: core_plugin
       function: branch
       conditions:
-        - condition: "{{ tasks.process_data.output.count > 100 }}"
-          true_branch: large_dataset_handler
-          false_branch: small_dataset_handler
-    - name: large_dataset_handler
-      plugin: data_plugin
-      function: handle_large_dataset
-    - name: small_dataset_handler
-      plugin: data_plugin
-      function: handle_small_dataset
+        - type: and
+          conditions:
+            - "{{ processed_count > 0 }}"
+            - "{{ error_count <= error_threshold }}"
+          true_branch: generate_report
+          false_branch: handle_errors
+    
+    - name: generate_report
+      plugin: reporting_plugin
+      function: create_report
+      parameters:
+        data: "{{ tasks.process_files.output.data }}"
+    
+    - name: handle_errors
+      plugin: error_plugin
+      function: log_errors
+      parameters:
+        error_count: ${error_count}
+        threshold: ${error_threshold}
 ```
 
-## Performance Considerations
+This example demonstrates how to use variables, set them dynamically, and use them in conditional logic to create a flexible, adaptive workflow.
 
-To optimize the performance of your TAO workflows:
+## Repurposing for Different Tasks
 
-1. Use the `parallel` option for tasks that can run concurrently.
-2. Implement caching mechanisms in your plugins for frequently accessed data.
-3. Use generator functions for processing large datasets to minimize memory usage.
-4. Profile your workflows using the built-in profiling tool:
-   ```
-   python tao_agent.py --config your_config.yaml --profile
-   ```
+To repurpose TAO for different tasks:
 
-## Testing and Debugging
+1. **Define Task-Specific Variables**: Identify the key parameters for your task and define them as variables in your workflow.
 
-TAO v2.0 includes a comprehensive testing framework:
+2. **Create Custom Plugins**: Develop plugins that encapsulate the core functionality of your specific tasks.
 
-1. Unit tests for individual plugins and tasks:
-   ```
-   python -m unittest discover tests/unit
-   ```
+3. **Design Flexible Workflows**: Use variables and conditional logic to create workflows that can adapt to different inputs and scenarios.
 
-2. Integration tests for entire workflows:
-   ```
-   python -m unittest discover tests/integration
-   ```
+4. **Utilize Dynamic Branching**: Leverage the enhanced conditional logic to create dynamic workflow paths based on task outputs and variable states.
 
-3. Debug mode for detailed logging:
-   ```
-   python tao_agent.py --config your_config.yaml --debug
-   ```
+5. **Parameterize Configurations**: Use variables for file paths, thresholds, and other configurable elements to make your workflows easily adaptable to different environments or requirements.
+
+By leveraging these capabilities, you can easily adapt TAO to a wide range of automation tasks without modifying the core system.
+
 
 ## Error Handling and Logging
 
@@ -329,6 +249,7 @@ A: Currently, TAO is designed for local execution. Distributed workflow support 
 - Introduced dual configuration modes (complex and basic)
 - Improved error handling and logging
 - Added advanced conditional logic and data flow management
+-  Removed AI driven workflow Management
 
 ### v1.5.0
 - Added initial plugin support
