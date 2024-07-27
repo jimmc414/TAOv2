@@ -1,12 +1,12 @@
 # Python Libraries for TAO Agent v2.0
 
-This document lists and describes the Python libraries used in the Task Automation Orchestrator (TAO) Agent v2.0, including several innovative packages to enhance efficiency and functionality.
+This document lists and describes the Python libraries used in the Task Automation Orchestrator (TAO) Agent v2.0. It includes core libraries, data processing tools, utility packages, and several innovative additions to enhance efficiency, flexibility, and functionality.
 
 ## Core Libraries
 
 1. **PyYAML**
    - Purpose: YAML file parsing and writing
-   - Usage: Configuration management
+   - Usage: Configuration management and dynamic plugin loading
 
 2. **transitions**
    - Purpose: Lightweight, object-oriented state machine implementation
@@ -24,55 +24,84 @@ This document lists and describes the Python libraries used in the Task Automati
    - Purpose: Monitor filesystem events
    - Usage: Monitoring input directories for new files
 
+6. **Jinja2**
+   - Purpose: Templating engine for Python
+   - Key features:
+     - Sandboxed execution
+     - Template inheritance
+     - Configurable syntax
+   - Usage: Enhanced variable interpolation in configuration files and dynamic string generation
+
+7. **jsonschema**
+   - Purpose: JSON Schema validation for Python
+   - Key features:
+     - Supports draft 3, 4, 6, 7 and 2019-09 of JSON Schema
+     - Validates against schemas
+   - Usage: Validating complex configuration structures and plugin definitions
+
+8. **pyparsing**
+   - Purpose: Library for creating and executing simple grammars
+   - Key features:
+     - Easily create parsers for domain-specific languages
+     - No separate lexer step
+   - Usage: Parsing complex conditional expressions defined in configuration files
+
+9. **pluggy**
+   - Purpose: Plugin registration and hook calling for Python
+   - Key features:
+     - Used by pytest for its plugin system
+     - Supports complex plugin architectures
+   - Usage: Enhancing the flexibility and capabilities of the plugin system
+
 ## Data Processing Libraries
 
-6. **pandas**
-   - Purpose: Data manipulation and analysis
-   - Usage: Processing input files, data consolidation
+10. **pandas**
+    - Purpose: Data manipulation and analysis
+    - Usage: Processing input files, data consolidation
 
-7. **openpyxl**
-   - Purpose: Reading and writing Excel files
-   - Usage: Handling Excel file inputs and outputs
+11. **openpyxl**
+    - Purpose: Reading and writing Excel files
+    - Usage: Handling Excel file inputs and outputs
 
 ## Utility Libraries
 
-8. **pathlib**
-   - Purpose: Object-oriented filesystem paths
-   - Usage: File and directory operations
+12. **pathlib**
+    - Purpose: Object-oriented filesystem paths
+    - Usage: File and directory operations
 
-9. **logging**
-   - Purpose: Flexible event logging
-   - Usage: System-wide logging
+13. **logging**
+    - Purpose: Flexible event logging
+    - Usage: System-wide logging
 
-10. **tqdm**
+14. **tqdm**
     - Purpose: Fast, extensible progress bar
     - Usage: Displaying progress for long-running operations
 
 ## Database Libraries
 
-11. **sqlite3**
+15. **sqlite3**
     - Purpose: SQLite database interface
     - Usage: Storing processing history and state data
 
 ## Networking Libraries
 
-12. **requests**
+16. **requests**
     - Purpose: HTTP library for making requests
     - Usage: Interacting with external APIs if needed
 
 ## Testing Libraries
 
-13. **pytest**
+17. **pytest**
     - Purpose: Testing framework
     - Usage: Unit and integration testing
 
-14. **unittest.mock**
+18. **unittest.mock**
     - Purpose: Mocking library
     - Usage: Mocking external dependencies in tests
 
-## Useful Additions
+## Advanced Functionality and Development Tools
 
-15. **Rich**
+19. **Rich**
     - Purpose: Rich text and beautiful formatting in the terminal
     - Key features:
       - Syntax highlighting for code and markup
@@ -80,7 +109,7 @@ This document lists and describes the Python libraries used in the Task Automati
       - Markdown rendering in the terminal
     - Usage: Enhancing CLI output, logging, and debugging information
 
-16. **Typer**
+20. **Typer**
     - Purpose: Building CLI applications
     - Key features:
       - Type hints-based CLI creation
@@ -88,7 +117,7 @@ This document lists and describes the Python libraries used in the Task Automati
       - Works on top of Click
     - Usage: Creating more intuitive and type-safe CLI interfaces
 
-17. **Pydantic**
+21. **Pydantic**
     - Purpose: Data validation and settings management using Python type annotations
     - Key features:
       - JSON schema generation
@@ -96,7 +125,7 @@ This document lists and describes the Python libraries used in the Task Automati
       - Seamless integration with FastAPI
     - Usage: Validating configuration files and input data
 
-18. **FastAPI**
+22. **FastAPI**
     - Purpose: Modern, fast (high-performance) web framework for building APIs
     - Key features:
       - Fast to code, based on standard Python type hints
@@ -104,7 +133,7 @@ This document lists and describes the Python libraries used in the Task Automati
       - High performance
     - Usage: Creating a web API for TAO Agent if remote control is needed
 
-19. **Black**
+23. **Black**
     - Purpose: The uncompromising code formatter
     - Key features:
       - Deterministic formatting
@@ -112,7 +141,7 @@ This document lists and describes the Python libraries used in the Task Automati
       - Integrates with most editors
     - Usage: Maintaining consistent code style across the project
 
-20. **Ruff**
+24. **Ruff**
     - Purpose: An extremely fast Python linter
     - Key features:
       - 10-100x faster than existing linters
@@ -120,7 +149,7 @@ This document lists and describes the Python libraries used in the Task Automati
       - Fixes many issues automatically
     - Usage: Rapid code quality checks and automatic fixes
 
-21. **Streamlit**
+25. **Streamlit**
     - Purpose: The fastest way to build and share data apps
     - Key features:
       - Turn data scripts into shareable web apps
@@ -130,11 +159,11 @@ This document lists and describes the Python libraries used in the Task Automati
 
 ## Additional Utilities
 
-22. **python-dotenv**
+26. **python-dotenv**
     - Purpose: Load environment variables from .env files
     - Usage: Managing configuration and secrets
 
-23. **tenacity**
+27. **tenacity**
     - Purpose: General-purpose retrying library
     - Key features:
       - More powerful than the 'retry' library
@@ -142,18 +171,6 @@ This document lists and describes the Python libraries used in the Task Automati
       - Highly customizable retry behaviors
     - Usage: Implementing robust error handling and recovery
 
-## Installation
-
-To install these libraries, you can use pip with the provided `requirements.txt` file:
-
-```
-pip install -r requirements.txt
-```
-
-
-## Version Management
-
-It's recommended to specify version numbers for each library in your `requirements.txt` file to ensure consistency across different environments and deployments. Regularly review and update these versions to benefit from bug fixes and new features while maintaining system stability.
 
 ## Development Workflow Integration
 
@@ -162,3 +179,5 @@ Consider integrating Black and Ruff into your development workflow:
 1. Set up pre-commit hooks to run Black and Ruff before each commit.
 2. Configure your CI/CD pipeline to check code formatting and linting.
 3. Use editor integrations for real-time feedback during development.
+
+Remember to regularly update your dependencies and test thoroughly after any updates to ensure system stability and take advantage of new features and improvements.

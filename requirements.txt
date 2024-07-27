@@ -17,3 +17,7 @@ black
 ruff
 streamlit
 tenacity
+jinja2
+jsonschema
+pyparsing
+pluggy
