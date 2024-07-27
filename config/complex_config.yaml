@@ -1,0 +1,262 @@
+config_version: "2.2"
+name: "Advanced Task Automation Orchestrator"
+description: "A highly configurable system for orchestrating complex, multi-step tasks with advanced conditional logic and branching"
+
+# Reference to other configuration files
+includes:
+  - global_config.yaml
+  - resources_config.yaml
+  - plugins_config.yaml
+  - security_config.yaml
+
+# Schema definition for key configuration elements
+schema:
+  task:
+    name: string
+    description: string
+    plugin: string
+    function: string
+    parameters: map
+    dependencies: list(string)
+    timeout: integer
+    retry:
+      max_attempts: integer
+      delay: integer
+    on_success: map
+    on_failure: map
+    steps: list(step)
+
+  step:
+    name: string
+    description: string
+    function: string
+    parameters: map
+    timeout: integer
+    on_success: map
+    on_failure: map
+    conditions: list(condition)
+
+  condition:
+    type: string
+    expression: string
+    true_branch: string
+    false_branch: string
+
+workflow:
+  name: "Complex Data Processing Workflow"
+  description: "A sophisticated workflow demonstrating advanced features of the TAO system"
+  flags: ["use_numpy", "use_pandas", "advanced_reporting"]
+  variables:
+    input_directory: "./data/input"
+    output_directory: "./data/output"
+    processing_date: "{{ now().strftime('%Y-%m-%d') }}"
+  
+  data_flow:
+    - from: check_input_files.output.input_files
+      to: process_files.parameters.input_files
+    - from: process_files.output.processed_files
+      to: generate_report.parameters.processed_files
+
+  tasks:
+    - name: initialize_workspace
+      description: "Set up the required directories for the workflow"
+      plugin: file_operations_plugin
+      function: setup_directories
+      parameters:
+        directories: 
+          - ${input_directory}
+          - ${output_directory}
+      timeout: 300  # 5 minutes
+      on_success:
+        message: "Workspace initialized successfully"
+        next: check_input_files
+      on_failure:
+        message: "Failed to initialize workspace"
+        action: abort_workflow
+
+    - name: check_input_files
+      description: "Check for input files and determine next action"
+      plugin: file_operations_plugin
+      function: list_files
+      parameters:
+        directory: ${input_directory}
+        pattern: "*.csv"
+      timeout: 60  # 1 minute
+      outputs:
+        - name: input_files
+          value: "{{ result }}"
+      conditions:
+        - type: expression
+          expression: "len(input_files) > 0"
+          true_branch: process_files
+          false_branch: handle_no_files
+
+    - name: handle_no_files
+      description: "Handle the case when no input files are found"
+      plugin: core_plugin
+      function: log_message
+      parameters:
+        message: "No input files found. Workflow will terminate."
+        level: WARNING
+      timeout: 30  # 30 seconds
+      on_completion:
+        action: end_workflow
+
+    - name: process_files
+      description: "Process each input file"
+      plugin: data_processing_plugin
+      function: process_csv_files
+      parameters:
+        input_files: ${input_files}
+        output_directory: ${output_directory}
+      dependencies: [check_input_files]
+      timeout: 3600  # 1 hour
+      retry:
+        max_attempts: 3
+        delay: 60
+      steps:
+        - name: read_csv
+          description: "Read the CSV file"
+          function: read_csv_file
+          parameters:
+            file: "{{ current_file }}"
+          timeout: 300  # 5 minutes
+          on_success:
+            message: "Successfully read {{ current_file }}"
+          on_failure:
+            message: "Failed to read {{ current_file }}"
+            action: skip_file
+
+        - name: transform_data
+          description: "Apply transformations to the data"
+          function: apply_transformations
+          parameters:
+            data: "{{ previous_step.result }}"
+          timeout: 600  # 10 minutes
+          on_success:
+            message: "Data transformation complete for {{ current_file }}"
+          on_failure:
+            message: "Data transformation failed for {{ current_file }}"
+            action: retry_step
+
+        - name: validate_data
+          description: "Validate the transformed data"
+          function: validate_data
+          parameters:
+            data: "{{ previous_step.result }}"
+          timeout: 300  # 5 minutes
+          conditions:
+            - type: expression
+              expression: "{{ result['is_valid'] }}"
+              true_branch: save_output
+              false_branch: handle_invalid_data
+
+        - name: handle_invalid_data
+          description: "Handle cases where data validation fails"
+          function: log_invalid_data
+          parameters:
+            data: "{{ steps.transform_data.result }}"
+            validation_errors: "{{ previous_step.result['errors'] }}"
+          timeout: 60  # 1 minute
+          on_completion:
+            action: skip_file
+
+        - name: save_output
+          description: "Save the processed data to a CSV file"
+          function: save_csv_file
+          parameters:
+            data: "{{ steps.transform_data.result }}"
+            output_file: "{{ output_directory }}/processed_{{ current_file_name }}"
+          timeout: 300  # 5 minutes
+          on_success:
+            message: "Successfully processed and saved {{ current_file }}"
+          on_failure:
+            message: "Failed to save processed file for {{ current_file }}"
+            action: retry_step
+
+      on_completion:
+        message: "File processing complete"
+        next: generate_report
+
+    - name: generate_report
+      description: "Generate a summary report of the processed files"
+      plugin: data_processing_plugin
+      function: create_summary_report
+      parameters:
+        processed_files: "{{ tasks.process_files.output.processed_files }}"
+        output_file: "{{ output_directory }}/summary_report_{{ processing_date }}.pdf"
+      dependencies: [process_files]
+      timeout: 900  # 15 minutes
+      on_success:
+        message: "Summary report generated successfully"
+        next: cleanup_workspace
+      on_failure:
+        message: "Failed to generate summary report"
+        action: retry_task
+        max_retries: 2
+
+    - name: cleanup_workspace
+      description: "Clean up temporary files from the workspace"
+      plugin: file_operations_plugin
+      function: cleanup_temp_files
+      parameters:
+        directory: ${input_directory}
+        pattern: "*.tmp"
+      dependencies: [generate_report]
+      timeout: 300  # 5 minutes
+      on_completion:
+        message: "Workspace cleaned up"
+        action: end_workflow
+
+logging:
+  global:
+    level: INFO
+    format: "%(asctime)s - %(levelname)s - %(message)s"
+  tasks:
+    process_files:
+      level: DEBUG
+    generate_report:
+      level: DEBUG
+  file_handlers:
+    - filename: "./logs/tao_log.txt"
+      level: INFO
+    - filename: "./logs/error_log.txt"
+      level: ERROR
+
+on_workflow_complete:
+  - function: send_notification
+    plugin: notification_plugin
+    parameters:
+      message: "Workflow completed successfully"
+      recipients: ["admin@example.com"]
+  - function: generate_success_report
+    plugin: core_plugin
+    parameters:
+      output_file: "./logs/success_report_{{ now().strftime('%Y%m%d_%H%M%S') }}.json"
+
+on_workflow_failure:
+  - function: send_notification
+    plugin: notification_plugin
+    parameters:
+      message: "Workflow failed. Check logs for details."
+      recipients: ["admin@example.com", "support@example.com"]
+  - function: generate_error_report
+    plugin: core_plugin
+    parameters:
+      output_file: "./logs/error_report_{{ now().strftime('%Y%m%d_%H%M%S') }}.json"
+
+# Examples of complex conditional logic
+examples:
+  complex_conditions:
+    - type: and
+      conditions:
+        - "{{ tasks.process_files.output.processed_count > 10 }}"
+        - "{{ 'high_priority' in workflow.flags }}"
+      true_branch: send_priority_notification
+      false_branch: continue
+    - type: or
+      conditions:
+        - "{{ tasks.generate_report.output.report_size > 1000000 }}"
+        - "{{ tasks.process_files.output.error_count > 0 }}"
+      true_branch: trigger_manual_review
+      false_branch: auto_approve

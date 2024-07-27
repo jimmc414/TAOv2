@@ -1,0 +1,91 @@
+config_version: "2.2"
+name: "Basic Task Automation Orchestrator"
+description: "A simple configuration for basic task automation workflows"
+
+global:
+  variables:
+    MAX_RETRIES: 3
+    TIMEOUT: 600  # 10 minutes
+  imports:
+    - import: os
+    - import: sys
+    - from: datetime
+      import: [datetime, timedelta]
+
+workflow_engine:
+  plugin_directory: "./plugins"
+  default_plugin: "core_plugin"
+
+logging:
+  level: INFO
+  file: "./logs/tao_log.txt"
+  format: "%(asctime)s - %(levelname)s - %(message)s"
+
+plugins:
+  - name: "core_plugin"
+    module: "plugins.core"
+    description: "Core plugin providing basic functionality"
+  - name: "file_operations_plugin"
+    module: "plugins.file_operations"
+    description: "Plugin for file and directory operations"
+
+workflow:
+  name: "Basic File Processing Workflow"
+  description: "A simple workflow for processing input files"
+  variables:
+    input_directory: "./data/input"
+    output_directory: "./data/output"
+  
+  tasks:
+    - name: check_input_files
+      description: "Check for input files"
+      plugin: file_operations_plugin
+      function: list_files
+      parameters:
+        directory: ${input_directory}
+        pattern: "*.txt"
+      on_success:
+        next: process_files
+      on_failure:
+        action: end_workflow
+
+    - name: process_files
+      description: "Process each input file"
+      plugin: core_plugin
+      function: process_text_files
+      parameters:
+        input_files: "{{ tasks.check_input_files.output.files }}"
+        output_directory: ${output_directory}
+      on_success:
+        next: cleanup_workspace
+      on_failure:
+        action: retry_task
+        max_retries: ${MAX_RETRIES}
+
+    - name: cleanup_workspace
+      description: "Clean up temporary files"
+      plugin: file_operations_plugin
+      function: cleanup_temp_files
+      parameters:
+        directory: ${input_directory}
+        pattern: "*.tmp"
+      on_completion:
+        action: end_workflow
+
+error_handling:
+  on_task_error: log_and_continue
+  on_workflow_failure: notify_admin
+
+on_workflow_complete:
+  - function: log_message
+    plugin: core_plugin
+    parameters:
+      message: "Workflow completed successfully"
+      level: INFO
+
+on_workflow_failure:
+  - function: log_message
+    plugin: core_plugin
+    parameters:
+      message: "Workflow failed. Check logs for details."
+      level: ERROR
