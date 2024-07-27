@@ -1,15 +1,13 @@
-config_version: "2.2"
+config_version: "2.3"
 name: "Advanced Task Automation Orchestrator"
-description: "A highly configurable system for orchestrating complex, multi-step tasks with advanced conditional logic and branching"
+description: "A highly configurable system for orchestrating complex, multi-step tasks with advanced conditional logic, branching, and variable management"
 
-# Reference to other configuration files
 includes:
   - global_config.yaml
   - resources_config.yaml
   - plugins_config.yaml
   - security_config.yaml
 
-# Schema definition for key configuration elements
 schema:
   task:
     name: string
@@ -25,6 +23,8 @@ schema:
     on_success: map
     on_failure: map
     steps: list(step)
+    variables: map  # New: Allow task-specific variable definitions
+    set_variables: map  # New: Allow setting variables after task execution
 
   step:
     name: string
@@ -35,6 +35,8 @@ schema:
     on_success: map
     on_failure: map
     conditions: list(condition)
+    variables: map  # New: Allow step-specific variable definitions
+    set_variables: map  # New: Allow setting variables after step execution
 
   condition:
     type: string
@@ -50,6 +52,8 @@ workflow:
     input_directory: "./data/input"
     output_directory: "./data/output"
     processing_date: "{{ now().strftime('%Y-%m-%d') }}"
+    file_count: 0
+    error_threshold: 5
   
   data_flow:
     - from: check_input_files.output.input_files
@@ -66,7 +70,7 @@ workflow:
         directories: 
           - ${input_directory}
           - ${output_directory}
-      timeout: 300  # 5 minutes
+      timeout: 300
       on_success:
         message: "Workspace initialized successfully"
         next: check_input_files
@@ -81,13 +85,15 @@ workflow:
       parameters:
         directory: ${input_directory}
         pattern: "*.csv"
-      timeout: 60  # 1 minute
+      timeout: 60
+      set_variables:
+        file_count: "{{ len(result) }}"
       outputs:
         - name: input_files
           value: "{{ result }}"
       conditions:
         - type: expression
-          expression: "len(input_files) > 0"
+          expression: "{{ file_count > 0 }}"
           true_branch: process_files
           false_branch: handle_no_files
 
@@ -98,7 +104,7 @@ workflow:
       parameters:
         message: "No input files found. Workflow will terminate."
         level: WARNING
-      timeout: 30  # 30 seconds
+      timeout: 30
       on_completion:
         action: end_workflow
 
@@ -110,17 +116,19 @@ workflow:
         input_files: ${input_files}
         output_directory: ${output_directory}
       dependencies: [check_input_files]
-      timeout: 3600  # 1 hour
+      timeout: 3600
       retry:
         max_attempts: 3
         delay: 60
+      variables:
+        error_count: 0
       steps:
         - name: read_csv
           description: "Read the CSV file"
           function: read_csv_file
           parameters:
             file: "{{ current_file }}"
-          timeout: 300  # 5 minutes
+          timeout: 300
           on_success:
             message: "Successfully read {{ current_file }}"
           on_failure:
@@ -132,19 +140,21 @@ workflow:
           function: apply_transformations
           parameters:
             data: "{{ previous_step.result }}"
-          timeout: 600  # 10 minutes
+          timeout: 600
           on_success:
             message: "Data transformation complete for {{ current_file }}"
           on_failure:
             message: "Data transformation failed for {{ current_file }}"
             action: retry_step
+          set_variables:
+            error_count: "{{ error_count + (1 if failed else 0) }}"
 
         - name: validate_data
           description: "Validate the transformed data"
           function: validate_data
           parameters:
             data: "{{ previous_step.result }}"
-          timeout: 300  # 5 minutes
+          timeout: 300
           conditions:
             - type: expression
               expression: "{{ result['is_valid'] }}"
@@ -157,9 +167,11 @@ workflow:
           parameters:
             data: "{{ steps.transform_data.result }}"
             validation_errors: "{{ previous_step.result['errors'] }}"
-          timeout: 60  # 1 minute
+          timeout: 60
           on_completion:
             action: skip_file
+          set_variables:
+            error_count: "{{ error_count + 1 }}"
 
         - name: save_output
           description: "Save the processed data to a CSV file"
@@ -167,7 +179,7 @@ workflow:
           parameters:
             data: "{{ steps.transform_data.result }}"
             output_file: "{{ output_directory }}/processed_{{ current_file_name }}"
-          timeout: 300  # 5 minutes
+          timeout: 300
           on_success:
             message: "Successfully processed and saved {{ current_file }}"
           on_failure:
@@ -176,7 +188,27 @@ workflow:
 
       on_completion:
         message: "File processing complete"
-        next: generate_report
+        next: check_error_threshold
+
+    - name: check_error_threshold
+      description: "Check if error threshold has been exceeded"
+      plugin: core_plugin
+      function: evaluate_condition
+      parameters:
+        condition: "{{ error_count > error_threshold }}"
+      on_success:
+        true_branch: handle_excessive_errors
+        false_branch: generate_report
+
+    - name: handle_excessive_errors
+      description: "Handle case where too many errors occurred"
+      plugin: core_plugin
+      function: log_message
+      parameters:
+        message: "Error threshold exceeded. Manual intervention required."
+        level: ERROR
+      on_completion:
+        action: notify_admin
 
     - name: generate_report
       description: "Generate a summary report of the processed files"
@@ -186,7 +218,7 @@ workflow:
         processed_files: "{{ tasks.process_files.output.processed_files }}"
         output_file: "{{ output_directory }}/summary_report_{{ processing_date }}.pdf"
       dependencies: [process_files]
-      timeout: 900  # 15 minutes
+      timeout: 900
       on_success:
         message: "Summary report generated successfully"
         next: cleanup_workspace
@@ -203,7 +235,7 @@ workflow:
         directory: ${input_directory}
         pattern: "*.tmp"
       dependencies: [generate_report]
-      timeout: 300  # 5 minutes
+      timeout: 300
       on_completion:
         message: "Workspace cleaned up"
         action: end_workflow
@@ -245,18 +277,17 @@ on_workflow_failure:
     parameters:
       output_file: "./logs/error_report_{{ now().strftime('%Y%m%d_%H%M%S') }}.json"
 
-# Examples of complex conditional logic
 examples:
   complex_conditions:
     - type: and
       conditions:
-        - "{{ tasks.process_files.output.processed_count > 10 }}"
+        - "{{ tasks.process_files.variables.error_count > error_threshold }}"
         - "{{ 'high_priority' in workflow.flags }}"
       true_branch: send_priority_notification
       false_branch: continue
     - type: or
       conditions:
         - "{{ tasks.generate_report.output.report_size > 1000000 }}"
-        - "{{ tasks.process_files.output.error_count > 0 }}"
+        - "{{ tasks.process_files.variables.error_count > 0 }}"
       true_branch: trigger_manual_review
       false_branch: auto_approve
