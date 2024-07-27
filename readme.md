@@ -1,25 +1,5 @@
 # Task Automation Orchestrator (TAO) v2.0
 
-## Table of Contents
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Quick Start Guide](#quick-start-guide)
-- [Configuration Structure](#configuration-structure)
-- [System Architecture](#system-architecture)
-- [Installation and Setup](#installation-and-setup)
-- [Creating and Using Plugins](#creating-and-using-plugins)
-- [Creating Workflows](#creating-workflows)
-- [Advanced Configuration Examples](#advanced-configuration-examples)
-- [Performance Considerations](#performance-considerations)
-- [Testing and Debugging](#testing-and-debugging)
-- [Error Handling and Logging](#error-handling-and-logging)
-- [Security Best Practices](#security-best-practices)
-- [Contributing](#contributing)
-- [License](#license)
-- [Troubleshooting](#troubleshooting)
-- [FAQ](#faq)
-- [Changelog](#changelog)
-- [Roadmap](#roadmap)
 
 ## Overview
 
